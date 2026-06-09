@@ -37,3 +37,25 @@ Core Phase 1 modules:
 - Payment monitoring
 - Basic reporting dashboard
 - Foundation for future auto-dispatch and live tracking
+
+## Implemented Admin MVP Scaffold
+
+This repository now includes a runnable monorepo scaffold for the requested Phase 1 admin and super-admin product:
+
+- `apps/web` — a Next.js admin dashboard with operations, dispatch, pickup management, collector management, customer management, sack inventory, payments, reporting, and super-admin settings screens.
+- `apps/api` — a Node.js/Express REST API with seeded multi-country marketplace data, role headers, pickup assignment, collector approval, sack pricing, payment reporting, proof upload, platform settings, and audit log foundations.
+- `packages/shared` — shared TypeScript role, country, pickup, collector, sack, customer, payment, and settings types used by both apps.
+
+### Local Development
+
+```bash
+npm install
+npm run dev:api
+npm run dev:web
+```
+
+The web app defaults to `http://localhost:3000` and the API defaults to `http://localhost:4000/api/v1`. If the API is unavailable, the dashboard uses safe seeded fallback data so the frontend can still be reviewed.
+
+### Demo Admin Roles
+
+The API accepts an `x-role` header. Use `super_admin` for country/platform settings and `operations_admin` for dispatch, collector approval, and pickup operations.
