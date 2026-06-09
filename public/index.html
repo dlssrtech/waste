@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WasteOps Marketplace Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Panel navigation">
+        <div class="brand">
+          <span class="brand-mark">♻</span>
+          <div>
+            <strong>WasteOps</strong>
+            <small>Marketplace control</small>
+          </div>
+        </div>
+        <nav id="panelNav" class="panel-nav"></nav>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Ghana launch · Nigeria and Côte d'Ivoire ready</p>
+            <h1 id="panelTitle">Operations Dashboard</h1>
+          </div>
+          <div class="topbar-actions">
+            <span class="status-pill">11 panels active</span>
+            <span class="status-pill success">Live prototype</span>
+          </div>
+        </header>
+
+        <section id="panelHero" class="panel-hero"></section>
+        <section id="metricGrid" class="metric-grid" aria-label="Panel metrics"></section>
+        <section class="content-grid">
+          <article id="primaryCard" class="card wide-card"></article>
+          <article id="secondaryCard" class="card"></article>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>

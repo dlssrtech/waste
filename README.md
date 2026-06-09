@@ -24,3 +24,23 @@ A multi-country, Uber-style waste collection operations platform designed for Gh
 ## Phase 1 Scope
 
 Phase 1 should be sold and built as **Operations Dashboard**, not only a recycling dashboard. It includes pickup request management, collector onboarding, manual assignment, sack inventory and pricing, photo proof verification, payment monitoring, reporting basics, and the foundation for auto-dispatch.
+
+## Working Web Prototype
+
+This repository now includes a runnable Node.js web prototype that verifies every operations panel route works without external package installation. Start it with `npm start`, then open `http://localhost:3000`.
+
+Available panels:
+
+- `/super-admin`
+- `/country-admin`
+- `/dispatcher`
+- `/collector-management`
+- `/pickup-management`
+- `/sack-inventory`
+- `/payments-wallets`
+- `/special-pickups`
+- `/photo-proof`
+- `/reports-analytics`
+- `/customer-support`
+
+Use `npm test` to check that all panel routes and required frontend assets return HTTP 200.
