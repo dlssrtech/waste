@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { BarChart3, Boxes, ClipboardList, Globe2, LayoutDashboard, Map, Shield, Truck, Users, WalletCards } from "lucide-react";
+import { BarChart3, Boxes, ClipboardList, Globe2, LayoutDashboard, Map, Shield, Truck, Users, WalletCards, MessageSquare, Image, ClipboardCheck, BriefcaseBusiness, Bug, Sparkles } from "lucide-react";
 
 const nav = [
-  ["/", "Dashboard", LayoutDashboard], ["/pickups", "Pickup Management", ClipboardList], ["/dispatch", "Dispatch Center", Map], ["/collectors", "Collectors", Truck], ["/customers", "Customers", Users], ["/sacks", "Sack Inventory", Boxes], ["/payments", "Payments", WalletCards], ["/reports", "Reports", BarChart3], ["/super-admin", "Super Admin", Shield]
+  ["/", "Dashboard", LayoutDashboard], ["/requests", "All Requests", ClipboardCheck], ["/pickups", "Waste Collection", ClipboardList], ["/cleaning", "Home Cleaning", Sparkles], ["/pest-control", "Pest Control", Bug], ["/job-assignment", "Job Assignment", BriefcaseBusiness], ["/live-tracking", "Live Tracking", Map], ["/sms", "SMS Center", MessageSquare], ["/gallery", "Gallery", Image], ["/dispatch", "Dispatch Center", Map], ["/collectors", "Providers", Truck], ["/customers", "Customers", Users], ["/inventory", "Inventory", Boxes], ["/sacks", "Sack Inventory", Boxes], ["/payments", "Payments", WalletCards], ["/reports", "Reports", BarChart3], ["/super-admin", "Super Admin", Shield]
 ] as const;
 
 export function Shell({ children, active }: { children: React.ReactNode; active: string }) {
