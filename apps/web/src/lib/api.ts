@@ -1,4 +1,4 @@
-import type { Collector, Country, Customer, Payment, Pickup, PlatformSettings, SackType } from "@waste/shared";
+import type { Collector, Country, Customer, Payment, Pickup, PlatformSettings, SackType, ServiceBooking, ServiceCategory, ServiceProvider, SmsTemplate, SmsWorkflowEvent } from "@waste/shared";
 
 export interface DashboardData {
   kpis: { totalCustomers: number; totalCollectors: number; todaysPickups: number; revenueToday: number; pendingRequests: number; activeJobs: number };
@@ -54,6 +54,25 @@ export const fallbackData = {
     { id: "PAY-1", countryId: "country-gh", customerId: "cust-1", method: "momo", status: "successful", amount: 70, createdAt: new Date().toISOString() },
     { id: "PAY-2", countryId: "country-gh", customerId: "cust-2", method: "cash", status: "pending", amount: 90, createdAt: new Date().toISOString() }
   ] satisfies Payment[],
+  serviceCategories: [
+    { id: "waste_collection", name: "Waste Collection", bookingFields: ["sackSummary", "pickupWindow"], active: true },
+    { id: "home_cleaning", name: "Home Cleaning", bookingFields: ["propertyType", "rooms", "dateTime", "instructions", "address"], active: true },
+    { id: "pest_control", name: "Pest Control", bookingFields: ["pestType", "propertySize", "dateTime", "images", "address"], active: true }
+  ] satisfies ServiceCategory[],
+  serviceProviders: [
+    { id: "prov-clean-1", countryId: "country-gh", name: "Efua Cleaning Co.", phone: "+233552000001", providerType: "home_cleaner", serviceCategory: "home_cleaning", availability: "online", assignedJobs: 2, completedJobs: 44, earnings: 3600, rating: 4.7 },
+    { id: "prov-pest-1", countryId: "country-gh", name: "Safe Pest Ghana", phone: "+233552000002", providerType: "pest_control_technician", serviceCategory: "pest_control", availability: "assigned", assignedJobs: 1, completedJobs: 31, earnings: 5200, rating: 4.6 }
+  ] satisfies ServiceProvider[],
+  serviceBookings: [
+    { id: "CL-2001", countryId: "country-gh", customerId: "cust-1", serviceType: "home_cleaning", providerId: "prov-clean-1", status: "assigned", scheduledAt: new Date().toISOString(), address: "East Legon, Accra", details: { propertyType: "Apartment", rooms: 3, instructions: "Deep clean kitchen" }, images: [], createdAt: new Date().toISOString() },
+    { id: "PC-3001", countryId: "country-gh", customerId: "cust-2", serviceType: "pest_control", providerId: "prov-pest-1", status: "on_the_way", scheduledAt: new Date().toISOString(), address: "Osu, Accra", details: { pestType: "Cockroaches", propertySize: "2 bedroom office" }, images: ["/uploads/pest-kitchen.jpg"], createdAt: new Date().toISOString() }
+  ] satisfies ServiceBooking[],
+  smsEvents: [
+    { id: "SMS-1", requestId: "PU-1002", customerPhone: "+233241000002", inboundText: "PICKUP 3 SACKS", status: "request_created", referenceNumber: "PU-1002", gatewayProvider: "Hubtel", deliveryStatus: "delivered", lastMessage: "Pickup request PU-1002 confirmed.", createdAt: new Date().toISOString() }
+  ] satisfies SmsWorkflowEvent[],
+  smsTemplates: [
+    { id: "tpl-confirm", name: "Pickup confirmation", trigger: "request_created", body: "Your pickup request {{reference}} has been received.", countries: ["GH", "NG"] }
+  ] satisfies SmsTemplate[],
   settings: { assignmentMode: "manual", collectorLocationIntervalSeconds: 45, defaultCountryId: "country-gh", smsProvider: "Hubtel", proofPhotosRequired: 2 } satisfies PlatformSettings
 };
 
@@ -65,3 +84,9 @@ export async function getCustomers(countryId = "country-gh") { try { return awai
 export async function getSacks(countryId = "country-gh") { try { return await api<SackType[]>(`/sack-types?countryId=${countryId}`); } catch { return fallbackData.sacks; } }
 export async function getPayments(countryId = "country-gh") { try { return await api<Payment[]>(`/payments?countryId=${countryId}`); } catch { return fallbackData.payments; } }
 export async function getSettings() { try { return await api<PlatformSettings>("/platform/settings"); } catch { return fallbackData.settings; } }
+
+export async function getServiceCategories() { try { return await api<ServiceCategory[]>("/service-categories"); } catch { return fallbackData.serviceCategories; } }
+export async function getServiceProviders(countryId = "country-gh", serviceType?: string) { try { return await api<ServiceProvider[]>(`/service-providers?countryId=${countryId}${serviceType ? `&serviceType=${serviceType}` : ""}`); } catch { return fallbackData.serviceProviders.filter((provider) => !serviceType || provider.serviceCategory === serviceType); } }
+export async function getServiceBookings(countryId = "country-gh", serviceType?: string) { try { return await api<ServiceBooking[]>(`/service-bookings?countryId=${countryId}${serviceType ? `&serviceType=${serviceType}` : ""}`); } catch { return fallbackData.serviceBookings.filter((booking) => !serviceType || booking.serviceType === serviceType); } }
+export async function getSmsEvents() { try { return await api<SmsWorkflowEvent[]>("/sms/events"); } catch { return fallbackData.smsEvents; } }
+export async function getSmsTemplates() { try { return await api<SmsTemplate[]>("/sms/templates"); } catch { return fallbackData.smsTemplates; } }

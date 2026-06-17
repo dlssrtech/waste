@@ -153,4 +153,52 @@ app.patch("/api/v1/platform/settings", requireRole("super_admin"), (req, res) =>
 });
 app.get("/api/v1/audit-logs", requireRole("super_admin"), (_req, res) => res.json(db.auditLogs));
 
+app.get("/api/v1/service-categories", (_req, res) => res.json(db.serviceCategories));
+app.get("/api/v1/service-providers", (req, res) => res.json(db.serviceProviders.filter((provider) => (!req.query.countryId || provider.countryId === req.query.countryId) && (!req.query.serviceType || provider.serviceCategory === req.query.serviceType))));
+app.get("/api/v1/service-bookings", (req, res) => res.json(db.serviceBookings.filter((booking) => (!req.query.countryId || booking.countryId === req.query.countryId) && (!req.query.serviceType || booking.serviceType === req.query.serviceType))));
+app.post("/api/v1/service-bookings", (req, res) => {
+  const payload = z.object({ countryId: z.string(), customerId: z.string(), serviceType: z.enum(["waste_collection", "home_cleaning", "pest_control"]), scheduledAt: z.string(), address: z.string(), details: z.record(z.union([z.string(), z.number(), z.array(z.string())])), images: z.array(z.string()).default([]) }).parse(req.body);
+  const prefix = payload.serviceType === "home_cleaning" ? "CL" : payload.serviceType === "pest_control" ? "PC" : "SV";
+  const booking = { id: `${prefix}-${2000 + db.serviceBookings.length + 1}`, status: "new" as const, createdAt: new Date().toISOString(), ...payload };
+  db.serviceBookings.unshift(booking);
+  persist("operations_admin", "service_booking.created", `${booking.id} ${booking.serviceType}`);
+  res.status(201).json(booking);
+});
+app.post("/api/v1/service-bookings/:id/assign", requireRole("operations_admin", "super_admin"), (req, res) => {
+  const booking = db.serviceBookings.find((item) => item.id === req.params.id);
+  const provider = db.serviceProviders.find((item) => item.id === req.body.providerId && (!booking || item.serviceCategory === booking.serviceType));
+  if (!booking || !provider) return res.status(404).json({ error: "Booking or matching provider not found" });
+  booking.providerId = provider.id;
+  booking.status = "assigned";
+  provider.availability = "assigned";
+  provider.assignedJobs += 1;
+  persist(req.header("x-role") ?? "operations_admin", "service_booking.assigned", `${booking.id} -> ${provider.name}`);
+  res.json({ booking, provider });
+});
+app.patch("/api/v1/service-bookings/:id/status", (req, res) => {
+  const booking = db.serviceBookings.find((item) => item.id === req.params.id);
+  if (!booking) return res.status(404).json({ error: "Booking not found" });
+  booking.status = req.body.status;
+  persist("operations_admin", "service_booking.status.updated", `${booking.id} -> ${booking.status}`);
+  res.json(booking);
+});
+app.get("/api/v1/sms/events", (req, res) => res.json(db.smsEvents.filter((event) => !req.query.status || event.status === req.query.status)));
+app.get("/api/v1/sms/templates", (_req, res) => res.json(db.smsTemplates));
+app.post("/api/v1/sms/inbound", (req, res) => {
+  const payload = z.object({ from: z.string(), text: z.string(), countryId: z.string().default(db.settings.defaultCountryId) }).parse(req.body);
+  const valid = /^PICKUP\s+\d+\s+SACKS?$/i.test(payload.text.trim());
+  const id = `SMS-${db.smsEvents.length + 1}`;
+  if (!valid) {
+    const event = { id, requestId: `INVALID-${id}`, customerPhone: payload.from, inboundText: payload.text, status: "invalid" as const, gatewayProvider: db.settings.smsProvider, deliveryStatus: "sent" as const, lastMessage: "Please send PICKUP followed by quantity, for example PICKUP 3 SACKS.", createdAt: new Date().toISOString() };
+    db.smsEvents.unshift(event); persist("sms_gateway", "sms.invalid", payload.from); return res.status(202).json(event);
+  }
+  const customer = db.customers.find((item) => item.phone === payload.from) ?? db.customers[0];
+  const quantity = Number(payload.text.match(/\d+/)?.[0] ?? 1);
+  const pickup = { id: `PU-${1000 + db.pickups.length + 1}`, countryId: payload.countryId, customerId: customer.id, source: "sms" as const, type: "sack" as const, status: "pending_assignment" as const, pickupWindow: "morning" as const, address: customer.address, sackSummary: `${quantity} Sacks`, amount: quantity * 30, proofPhotos: [], createdAt: new Date().toISOString() };
+  db.pickups.unshift(pickup);
+  const event = { id, requestId: pickup.id, customerPhone: payload.from, inboundText: payload.text, status: "request_created" as const, referenceNumber: pickup.id, gatewayProvider: db.settings.smsProvider, deliveryStatus: "sent" as const, lastMessage: `Pickup request ${pickup.id} confirmed for ${quantity} sacks.`, createdAt: new Date().toISOString() };
+  db.smsEvents.unshift(event); persist("sms_gateway", "sms.pickup.created", pickup.id); res.status(201).json({ event, pickup });
+});
+
+
 app.listen(port, () => console.log(`Waste API listening on http://localhost:${port}/api/v1`));

@@ -84,3 +84,65 @@ export interface PlatformSettings {
   smsProvider: string;
   proofPhotosRequired: number;
 }
+
+
+export type ServiceType = "waste_collection" | "home_cleaning" | "pest_control";
+export type ProviderType = "waste_collector" | "home_cleaner" | "pest_control_technician";
+export type JobStatus = "new" | "assigned" | "on_the_way" | "in_progress" | "completed" | "cancelled";
+export type SmsStatus = "received" | "validated" | "invalid" | "request_created" | "assigned" | "on_the_way" | "completed" | "delivered" | "failed";
+
+export interface ServiceCategory {
+  id: ServiceType;
+  name: string;
+  bookingFields: string[];
+  active: boolean;
+}
+
+export interface ServiceProvider {
+  id: string;
+  countryId: string;
+  name: string;
+  phone: string;
+  providerType: ProviderType;
+  serviceCategory: ServiceType;
+  availability: Availability;
+  assignedJobs: number;
+  completedJobs: number;
+  earnings: number;
+  rating: number;
+}
+
+export interface ServiceBooking {
+  id: string;
+  countryId: string;
+  customerId: string;
+  serviceType: ServiceType;
+  providerId?: string;
+  status: JobStatus;
+  scheduledAt: string;
+  address: string;
+  details: Record<string, string | number | string[]>;
+  images: string[];
+  createdAt: string;
+}
+
+export interface SmsWorkflowEvent {
+  id: string;
+  requestId: string;
+  customerPhone: string;
+  inboundText: string;
+  status: SmsStatus;
+  referenceNumber?: string;
+  gatewayProvider: string;
+  deliveryStatus: "queued" | "sent" | "delivered" | "failed";
+  lastMessage: string;
+  createdAt: string;
+}
+
+export interface SmsTemplate {
+  id: string;
+  name: string;
+  trigger: string;
+  body: string;
+  countries: CountryCode[];
+}
